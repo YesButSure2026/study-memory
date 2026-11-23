@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#f7f7f5">
+  <meta name="description" content="Личная система карточек, тестов и интервального повторения">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css">
+  <title>Study Memory</title>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <a class="brand" href="#" aria-label="Study Memory — главная">
+        <span class="brand-mark">s</span><span>study memory</span>
+      </a>
+      <div class="top-actions">
+        <button class="icon-btn" id="themeBtn" aria-label="Переключить тему" title="Тема">◐</button>
+        <button class="icon-btn" id="backupBtn" aria-label="Резервная копия" title="Резервная копия">⇧</button>
+      </div>
+    </header>
+
+    <main>
+      <section class="view active" id="homeView">
+        <div class="welcome">
+          <div class="eyebrow" id="todayLabel">ТВОЙ УЧЕБНЫЙ ДЕНЬ</div>
+          <h1>Запоминай<br><span class="muted">осознанно.</span></h1>
+          <p class="subtle">Небольшие регулярные повторения помогают удерживать знания надолго.</p>
+        </div>
+        <div class="stats-grid">
+          <article class="stat-card">
+            <span class="stat-number" id="dueCount">0</span>
+            <span class="stat-label">к повторению</span>
+          </article>
+          <article class="stat-card">
+            <span class="stat-number" id="deckCount">0</span>
+            <span class="stat-label">учебных наборов</span>
+          </article>
+          <article class="stat-card">
+            <span class="stat-number" id="learnedCount">0</span>
+            <span class="stat-label">изучено сегодня</span>
+          </article>
+        </div>
+        <button class="primary-btn wide" id="startReviewBtn">Начать повторение <span>→</span></button>
+        <div class="section-heading">
+          <div><div class="eyebrow">ТВОЯ БИБЛИОТЕКА</div><h2>Продолжить обучение</h2></div>
+          <button class="text-btn" data-nav="library">Все наборы</button>
+        </div>
+        <div id="homeDecks" class="deck-list"></div>
+        <div class="quick-actions">
+          <button class="quick-card" data-action="new-deck"><span class="quick-icon">＋</span><b>Новый набор</b><small>Создать тему для изучения</small></button>
+          <button class="quick-card" data-nav="library"><span class="quick-icon">▤</span><b>Библиотека</b><small>Все твои материалы</small></button>
+        </div>
+      </section>
+
+      <section class="view" id="libraryView">
+        <div class="page-head">
+          <div class="eyebrow">МАТЕРИАЛЫ</div><h1>Библиотека</h1>
+          <p class="subtle">Собирай знания по предметам и темам.</p>
+        </div>
+        <div class="toolbar">
+          <input id="searchInput" class="search" type="search" placeholder="Поиск наборов…" autocomplete="off">
+          <button class="primary-btn" id="newDeckBtn">＋ Создать</button>
+        </div>
+        <div id="deckList" class="deck-list"></div>
+        <div id="emptyLibrary" class="empty-state hidden"><div class="empty-symbol">▤</div><b>Здесь пока пусто</b><p>Создай первый набор и добавь в него карточки.</p><button class="primary-btn" data-action="new-deck">Создать набор</button></div>
+      </section>
+
+      <section class="view" id="deckView">
+        <button class="back-btn" data-back="library">← Библиотека</button>
+        <div class="page-head"><div class="eyebrow" id="deckSubject">ПРЕДМЕТ</div><h1 id="deckTitle">Набор</h1><p class="subtle" id="deckDescription"></p></div>
+        <div class="deck-summary">
+          <div><b id="deckCardCount">0</b><small>карточек</small></div>
+          <div><b id="deckDueCount">0</b><small>к повторению</small></div>
+          <div><b id="deckMasteredCount">0</b><small>освоено</small></div>
+        </div>
+        <div class="deck-actions">
+          <button class="primary-btn" id="deckStudyBtn">Учить карточки</button>
+          <button class="secondary-btn" id="deckQuizBtn">Пройти тест</button>
+        </div>
+        <div class="section-heading"><h2>Карточки набора</h2><button class="text-btn" id="addCardBtn">＋ Добавить</button></div>
+        <div id="cardList" class="card-list"></div>
+        <div class="inline-actions">
+          <button class="secondary-btn" id="editDeckBtn">Изменить набор</button>
+          <button class="danger-btn" id="deleteDeckBtn">Удалить набор</button>
+        </div>
+      </section>
+
+      <section class="view" id="studyView">
+        <div class="study-top"><button class="back-btn" id="exitStudyBtn">✕ Завершить</button><span class="study-counter" id="studyCounter">0 / 0</span></div>
+        <div class="progress-track"><div id="studyProgress"></div></div>
+        <div class="study-context" id="studyContext">ПОВТОРЕНИЕ</div>
+        <article class="flashcard" id="flashcard">
+          <div class="card-side-label" id="sideLabel">ВОПРОС</div>
+          <div id="studyImageWrap" class="study-image-wrap hidden"><img id="studyImage" alt="Изображение к карточке"></div>
+          <div class="flashcard-text" id="studyText">Вопрос появится здесь</div>
+          <div class="card-hint" id="cardHint">Нажми, чтобы увидеть ответ</div>
+        </article>
+        <button class="primary-btn wide" id="revealBtn">Показать ответ</button>
+        <div id="ratingArea" class="rating-area hidden">
+          <p class="subtle center">Насколько хорошо ты вспомнила материал?</p>
+          <div class="rating-grid">
+            <button class="rating-btn again" data-rating="again"><b>Снова</b><small>Не вспомнила</small></button>
+            <button class="rating-btn hard" data-rating="hard"><b>Трудно</b><small>С большим усилием</small></button>
+            <button class="rating-btn good" data-rating="good"><b>Хорошо</b><small>Вспомнила</small></button>
+            <button class="rating-btn easy" data-rating="easy"><b>Легко</b><small>Без усилий</small></button>
+          </div>
+        </div>
+      </section>
+
+      <section class="view" id="quizView">
+        <div class="study-top"><button class="back-btn" id="exitQuizBtn">✕ Завершить</button><span class="study-counter" id="quizCounter">1 / 1</span></div>
+        <div class="progress-track"><div id="quizProgress"></div></div>
+        <div class="study-context">ПРОВЕРКА ЗНАНИЙ</div>
+        <article class="quiz-card">
+          <div id="quizQuestion" class="quiz-question"></div>
+          <div id="quizOptions" class="quiz-options"></div>
+          <div id="quizFeedback" class="quiz-feedback hidden"></div>
+          <button class="primary-btn wide hidden" id="nextQuizBtn">Далее →</button>
+        </article>
+      </section>
+
+      <section class="view" id="statsView">
+        <div class="page-head"><div class="eyebrow">ТВОЙ ПРОГРЕСС</div><h1>Статистика</h1><p class="subtle">Отслеживай регулярность и результаты обучения.</p></div>
+        <div class="stats-grid">
+          <article class="stat-card"><span class="stat-number" id="totalReviews">0</span><span class="stat-label">ответов всего</span></article>
+          <article class="stat-card"><span class="stat-number" id="masteredTotal">0</span><span class="stat-label">освоено карточек</span></article>
+          <article class="stat-card"><span class="stat-number" id="todayReviews">0</span><span class="stat-label">сегодня</span></article>
+        </div>
+        <div class="panel"><h2>Как считается прогресс</h2><p class="subtle">Карточка считается освоенной после нескольких успешных повторений. Статистика хранится только на этом устройстве.</p></div>
+        <div class="panel"><h2>Данные приложения</h2><p class="subtle">Регулярно сохраняй резервную копию, особенно перед очисткой данных браузера или переносом на другой телефон.</p><button class="secondary-btn wide" id="statsBackupBtn">Создать резервную копию</button></div>
+      </section>
+    </main>
+
+    <nav class="bottom-nav">
+      <button class="nav-item active" data-nav="home"><span>⌂</span><small>Главная</small></button>
+      <button class="nav-item" data-nav="library"><span>▤</span><small>Библиотека</small></button>
+      <button class="nav-item" data-nav="stats"><span>▥</span><small>Прогресс</small></button>
+    </nav>
+  </div>
+
+  <dialog id="deckDialog" class="modal">
+    <form id="deckForm" method="dialog">
+      <div class="modal-head"><div><div class="eyebrow">БИБЛИОТЕКА</div><h2 id="deckDialogTitle">Новый набор</h2></div><button type="button" class="icon-btn" data-close="deckDialog">✕</button></div>
+      <label>Название набора<input id="deckName" required maxlength="70" placeholder="Например, Цитология"></label>
+      <label>Предмет или категория<input id="deckSubjectInput" maxlength="50" placeholder="Например, Биология"></label>
+      <label>Описание<textarea id="deckDescInput" rows="3" maxlength="240" placeholder="Что входит в этот набор?"></textarea></label>
+      <div class="modal-actions"><button type="button" class="secondary-btn" data-close="deckDialog">Отмена</button><button class="primary-btn" type="submit">Сохранить</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="cardDialog" class="modal">
+    <form id="cardForm" method="dialog">
+      <div class="modal-head"><div><div class="eyebrow">УЧЕБНЫЙ МАТЕРИАЛ</div><h2 id="cardDialogTitle">Новая карточка</h2></div><button type="button" class="icon-btn" data-close="cardDialog">✕</button></div>
+      <label>Вопрос<textarea id="cardQuestion" rows="3" required maxlength="1200" placeholder="Что нужно вспомнить?"></textarea></label>
+      <label>Ответ<textarea id="cardAnswer" rows="4" required maxlength="3000" placeholder="Напиши правильный ответ…"></textarea></label>
+      <label>Изображение <input id="cardImage" type="file" accept="image/*"></label>
+      <div id="imagePreviewWrap" class="image-preview-wrap hidden"><img id="imagePreview" alt="Предпросмотр"><button type="button" class="text-btn" id="removeImageBtn">Убрать изображение</button></div>
+      <label>Теги <input id="cardTags" maxlength="160" placeholder="митохондрии, органоиды"></label>
+      <div class="modal-actions"><button type="button" class="secondary-btn" data-close="cardDialog">Отмена</button><button class="primary-btn" type="submit">Сохранить</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="backupDialog" class="modal">
+    <div class="modal-head"><div><div class="eyebrow">БЕЗОПАСНОСТЬ ДАННЫХ</div><h2>Резервная копия</h2></div><button class="icon-btn" data-close="backupDialog">✕</button></div>
+    <p class="subtle">Экспорт сохраняет наборы, карточки, расписание повторений и прикреплённые изображения в один файл JSON.</p>
+    <button class="primary-btn wide" id="exportBtn">Скачать резервную копию</button>
+    <label class="import-label">Восстановить из файла<input id="importFile" type="file" accept=".json,application/json"></label>
+    <p class="tiny-note">При импорте существующие данные будут объединены с данными из файла. Совпадающие ID будут обновлены.</p>
+  </dialog>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+</body>
+</html>
