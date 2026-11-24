@@ -82,10 +82,6 @@
         </div>
         <div class="section-heading"><h2>Карточки набора</h2><button class="text-btn" id="addCardBtn">＋ Добавить</button></div>
         <div id="cardList" class="card-list"></div>
-        <div class="section-heading"><div><div class="eyebrow">НОВЫЙ ФОРМАТ</div><h2>Интерактивные изображения</h2></div><button class="text-btn" id="addInteractiveBtn">＋ Создать</button></div>
-        <p class="subtle">Отмечай структуры точками или свободными контурами и изучай их отдельно от обычных карточек.</p>
-        <div id="interactiveList" class="card-list"></div>
-        <button class="secondary-btn wide" id="startInteractiveSetupBtn">Выбрать изображения для занятия</button>
         <div class="inline-actions">
           <button class="secondary-btn" id="editDeckBtn">Изменить набор</button>
           <button class="danger-btn" id="deleteDeckBtn">Удалить набор</button>
@@ -126,41 +122,6 @@
         </article>
       </section>
 
-      <section class="view" id="interactiveSetupView">
-        <button class="back-btn" id="backInteractiveSetup">← К набору</button>
-        <div class="page-head"><div class="eyebrow">ИНТЕРАКТИВНОЕ ИЗУЧЕНИЕ</div><h1>Выбери изображения</h1><p class="subtle">Можно выбрать несколько материалов. Структуры будут перемешаны.</p></div>
-        <div id="interactiveSelectionList" class="selection-list"></div>
-        <div class="panel"><h2>Режим занятия</h2>
-          <label class="choice-label"><input type="radio" name="interactiveMode" value="identify" checked> Определи выделенную структуру</label>
-          <label class="choice-label"><input type="radio" name="interactiveMode" value="locate"> Найди структуру на изображении</label>
-        </div>
-        <div class="panel"><h2>Как оценивать ответ?</h2>
-          <label class="choice-label"><input type="radio" name="interactiveEvaluation" value="self" checked> Самооценка: знаю / неуверенно / не знаю</label>
-          <label class="choice-label"><input type="radio" name="interactiveEvaluation" value="text"> Ввод названия с проверкой</label>
-        </div>
-        <button class="primary-btn wide" id="beginInteractiveBtn">Начать занятие</button>
-      </section>
-
-      <section class="view" id="interactiveStudyView">
-        <div class="study-top"><button class="back-btn" id="exitInteractiveStudy">✕ Завершить</button><span class="study-counter" id="interactiveCounter">0 / 0</span></div>
-        <div class="progress-track"><div id="interactiveProgress"></div></div>
-        <div class="study-context" id="interactivePrompt">НАЙДИ СТРУКТУРУ</div>
-        <div class="editor-tools study-zoom-tools"><button class="mini-btn" id="studyZoomOut" type="button">−</button><button class="mini-btn" id="studyZoomIn" type="button">＋ Увеличить</button><button class="mini-btn" id="studyZoomReset" type="button">Сбросить масштаб</button></div>
-        <div class="interactive-canvas-wrap study-canvas-wrap"><canvas id="interactiveStudyCanvas"></canvas></div>
-        <p class="tiny-note center">Перетаскивай изображение для перемещения. Для точного просмотра используй масштаб.</p>
-        <div class="interactive-answer" id="interactiveAnswerArea">
-          <input id="interactiveAnswerInput" type="text" placeholder="Введи название структуры" autocomplete="off">
-          <button class="primary-btn wide" id="checkInteractiveAnswer">Проверить</button>
-          <div class="rating-grid hidden" id="interactiveSelfRatings">
-            <button class="rating-btn good" data-self-rating="known"><b>Знаю</b></button>
-            <button class="rating-btn hard" data-self-rating="unsure"><b>Неуверенно</b></button>
-            <button class="rating-btn again" data-self-rating="unknown"><b>Не знаю</b></button>
-          </div>
-          <button class="primary-btn wide hidden" id="nextInteractiveBtn">Следующая структура →</button>
-          <div class="quiz-feedback hidden" id="interactiveFeedback"></div>
-        </div>
-      </section>
-
       <section class="view" id="statsView">
         <div class="page-head"><div class="eyebrow">ТВОЙ ПРОГРЕСС</div><h1>Статистика</h1><p class="subtle">Отслеживай регулярность и результаты обучения.</p></div>
         <div class="stats-grid">
@@ -168,7 +129,6 @@
           <article class="stat-card"><span class="stat-number" id="masteredTotal">0</span><span class="stat-label">освоено карточек</span></article>
           <article class="stat-card"><span class="stat-number" id="todayReviews">0</span><span class="stat-label">сегодня</span></article>
         </div>
-        <div class="panel"><h2>Интерактивные структуры</h2><p class="subtle">Результаты сохраняются отдельно для каждой структуры.</p><div id="interactiveStatsList" class="mark-list"><p class="tiny-note">Пока нет результатов.</p></div></div>
         <div class="panel"><h2>Как считается прогресс</h2><p class="subtle">Карточка считается освоенной после нескольких успешных повторений. Статистика хранится только на этом устройстве.</p></div>
         <div class="panel"><h2>Данные приложения</h2><p class="subtle">Регулярно сохраняй резервную копию, особенно перед очисткой данных браузера или переносом на другой телефон.</p><button class="secondary-btn wide" id="statsBackupBtn">Создать резервную копию</button></div>
       </section>
@@ -201,27 +161,6 @@
       <label>Теги <input id="cardTags" maxlength="160" placeholder="митохондрии, органоиды"></label>
       <div class="modal-actions"><button type="button" class="secondary-btn" data-close="cardDialog">Отмена</button><button class="primary-btn" type="submit">Сохранить</button></div>
     </form>
-  </dialog>
-
-  <dialog id="interactiveEditorDialog" class="modal editor-modal">
-    <div class="modal-head"><div><div class="eyebrow">ИНТЕРАКТИВНЫЙ МАТЕРИАЛ</div><h2 id="interactiveEditorTitle">Новое изображение</h2></div><button class="icon-btn" id="closeInteractiveEditor" type="button">✕</button></div>
-    <label class="editor-label">Название изображения<input id="interactiveTitle" maxlength="100" placeholder="Например, Слои стенки желудка"></label>
-    <label class="editor-label">Изображение (до 12 МБ)<input id="interactiveImageFile" type="file" accept="image/*"></label>
-    <div class="editor-tools">
-      <button class="secondary-btn" id="pointTool" type="button">＋ Точка</button><button class="secondary-btn" id="areaTool" type="button">✎ Контур</button>
-      <button class="secondary-btn" id="selectTool" type="button">↖ Выбор</button><button class="secondary-btn" id="undoMarkBtn" type="button">↶ Отменить</button>
-    </div>
-    <div class="editor-tools"><button class="mini-btn" id="editorZoomOut" type="button">−</button><button class="mini-btn" id="editorZoomIn" type="button">＋ Масштаб</button><button class="mini-btn" id="editorFit" type="button">Вписать</button><label class="color-control">Цвет <input id="markColor" type="color" value="#43b8a5"></label><label class="color-control">Прозрачность <input id="markOpacity" type="range" min="10" max="90" value="35"></label></div>
-    <p class="tiny-note">Точка: коснись нужного места. Контур: обведи структуру пальцем и отпусти. Перетаскивание в режиме «Выбор» перемещает изображение.</p>
-    <div class="interactive-canvas-wrap editor-canvas-wrap"><canvas id="interactiveEditorCanvas"></canvas></div>
-    <div class="panel mark-edit-panel"><h2 id="markEditorHeading">Структуры на изображении</h2>
-      <label class="editor-label">Название структуры<input id="markName" maxlength="100" placeholder="Например, бокаловидная клетка"></label>
-      <label class="editor-label">Допустимые варианты названия<input id="markAliases" maxlength="300" placeholder="синоним 1, синоним 2"></label>
-      <label class="editor-label">Пояснение<textarea id="markExplanation" rows="3" maxlength="1000" placeholder="Функция, особенности строения…"></textarea></label>
-      <div class="modal-actions"><button class="danger-btn" id="deleteMarkBtn" type="button">Удалить метку</button><button class="secondary-btn" id="applyMarkBtn" type="button">Применить к метке</button></div>
-      <div id="editorMarkList" class="mark-list"></div>
-    </div>
-    <div class="modal-actions"><button class="secondary-btn" id="cancelInteractiveEditor" type="button">Отмена</button><button class="primary-btn" id="saveInteractiveBtn" type="button">Сохранить изображение</button></div>
   </dialog>
 
   <dialog id="backupDialog" class="modal">
