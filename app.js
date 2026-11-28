@@ -1,9 +1,31 @@
-const DB_NAME="study-memory-db", DB_VERSION=2;
+const DB_NAME="study-memory-db", DB_VERSION=3;
 let db, decks=[], cards=[], activeDeckId=null, editingDeckId=null, editingCardId=null, pendingImage=null, studyQueue=[], studyIndex=0, revealed=false, quizQueue=[], quizIndex=0, quizCorrect=0, quizAnswered=false;
 const $=id=>document.getElementById(id);
 const today=()=>new Date().toISOString().slice(0,10);
 const uid=()=>`${Date.now()}-${Math.random().toString(16).slice(2)}`;
-function openDB(){return new Promise((resolve,reject)=>{const req=indexedDB.open(DB_NAME,DB_VERSION);req.onupgradeneeded=()=>{const d=req.result;if(!d.objectStoreNames.contains("decks"))d.createObjectStore("decks",{keyPath:"id"});if(!d.objectStoreNames.contains("cards"))d.createObjectStore("cards",{keyPath:"id"});if(!d.objectStoreNames.contains("meta"))d.createObjectStore("meta",{keyPath:"key"});if(!d.objectStoreNames.contains("interactive"))d.createObjectStore("interactive",{keyPath:"id"});};req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error);});}
+function openDB(){return new Promise((resolve,reject)=>{
+  if(!window.indexedDB){reject(new Error("IndexedDB недоступна в этом браузере или режиме просмотра"));return;}
+  let settled=false;
+  const req=indexedDB.open(DB_NAME,DB_VERSION);
+  req.onupgradeneeded=()=>{
+    const d=req.result;
+    // Идемпотентная миграция: создаём только отсутствующие хранилища,
+    // не удаляя и не перезаписывая существующие карточки и наборы.
+    if(!d.objectStoreNames.contains("decks"))d.createObjectStore("decks",{keyPath:"id"});
+    if(!d.objectStoreNames.contains("cards"))d.createObjectStore("cards",{keyPath:"id"});
+    if(!d.objectStoreNames.contains("meta"))d.createObjectStore("meta",{keyPath:"key"});
+    if(!d.objectStoreNames.contains("interactive"))d.createObjectStore("interactive",{keyPath:"id"});
+  };
+  req.onblocked=()=>{if(!settled){settled=true;reject(new Error("Обновление базы заблокировано другой открытой вкладкой Study Memory. Закрой все вкладки и окна приложения и открой его снова."));}};
+  req.onsuccess=()=>{
+    const connection=req.result;
+    if(settled){connection.close();return;}
+    settled=true;
+    connection.onversionchange=()=>connection.close();
+    resolve(connection);
+  };
+  req.onerror=()=>{if(!settled){settled=true;reject(req.error||new Error("Не удалось открыть IndexedDB"));}};
+});}
 function store(name,mode="readonly"){return db.transaction(name,mode).objectStore(name)}
 function all(name){return new Promise((resolve,reject)=>{const r=store(name).getAll();r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error)})}
 function put(name,obj){return new Promise((resolve,reject)=>{const tx=db.transaction(name,"readwrite");tx.objectStore(name).put(obj);tx.oncomplete=()=>resolve();tx.onerror=()=>reject(tx.error)})}
@@ -114,4 +136,4 @@ function finishInteractiveStudy(){$("interactiveProgress").style.width="100%";$(
 const baseRenderStats=renderStats;
 renderStats=function(){baseRenderStats();const target=$("interactiveStatsList");if(!target)return;const rows=[];interactiveItems.forEach(item=>(item.marks||[]).forEach(mark=>{const st=mark.stats||{};if(st.attempts)rows.push({title:mark.name,image:item.title,attempts:st.attempts,known:st.known||0,unsure:st.unsure||0,unknown:st.unknown||0})}));target.innerHTML=rows.length?rows.sort((a,b)=>b.attempts-a.attempts).map(r=>`<div class="mark-list-item"><span class="mark-name"><b>${esc(r.title)}</b><br><small>${esc(r.image)} · ${r.attempts} ответов · знаю: ${r.known}, неуверенно: ${r.unsure}, не знаю: ${r.unknown}</small></span></div>`).join(""):'<p class="tiny-note">Пока нет результатов. Они появятся после первого интерактивного занятия.</p>'};
 async function seed(){if(decks.length)return;const d={id:uid(),name:"Клеточные органоиды",subject:"Биология",description:"Демонстрационный набор для знакомства с приложением."};await put("decks",d);const samples=[["Какую функцию выполняют митохондрии?","Синтез АТФ в процессе клеточного дыхания.",["цитология","органоиды"]],["Где происходит синтез белка?","На рибосомах.",["цитология","белки"]],["Какую функцию выполняет аппарат Гольджи?","Модификация, сортировка и упаковка белков и липидов.",["цитология","органоиды"]],["Что находится внутри ядра клетки?","Хроматин (ДНК в комплексе с белками) и ядрышко.",["цитология","ядро"]]];for(const [question,answer,tags] of samples)await put("cards",{id:uid(),deckId:d.id,question,answer,tags,box:1,interval:1,nextReview:today(),reviewCount:0,createdAt:new Date().toISOString()})}
-(async()=>{try{db=await openDB();await refresh();await seed();await refresh();initEvents();setTheme(localStorage.getItem("sm-theme")||"light");if("serviceWorker"in navigator&&location.protocol.startsWith("http"))navigator.serviceWorker.register("./service-worker.js").catch(()=>{});}catch(e){console.error(e);toast("Ошибка запуска базы данных. Проверь поддержку IndexedDB.")}})();
+(async()=>{try{db=await openDB();await refresh();await seed();await refresh();initEvents();setTheme(localStorage.getItem("sm-theme")||"light");if("serviceWorker"in navigator&&location.protocol.startsWith("http"))navigator.serviceWorker.register("./service-worker.js").catch(()=>{});}catch(e){console.error(e);toast("Ошибка запуска базы данных: "+(e?.message||"проверь IndexedDB"))}})();
